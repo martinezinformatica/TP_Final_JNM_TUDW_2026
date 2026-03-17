@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15
+    container_name: db_proyecto_final
+    restart: always
+    environment:
+      POSTGRES_DB: proyecto_db
+      POSTGRES_USER: ana_user
+      POSTGRES_PASSWORD: ana_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  backend:
+    build: ./backend
+    container_name: django_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=proyecto_db
+      - DB_USER=ana_user
+      - DB_PASS=ana_password
+      - DB_HOST=db
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
