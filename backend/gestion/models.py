@@ -9,6 +9,13 @@ class Producto(models.Model):
 
     def __str__(self):
         return self.nombre
+class Mesa(models.Model):
+    numero = models.IntegerField(unique=True)
+    capacidad = models.IntegerField(default=4)
+    esta_libre = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f"Mesa {self.numero}"
 
 class Pedido(models.Model):
     # Definimos los estados 
