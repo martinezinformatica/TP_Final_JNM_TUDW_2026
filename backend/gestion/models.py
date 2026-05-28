@@ -18,7 +18,7 @@ class Mesa(models.Model):
         return f"Mesa {self.numero}"
 
 class Pedido(models.Model):
-    # Definimos los estados 
+    
     ESTADOS_CHOICES = [
         ('NUE', 'Nuevo'),
         ('CON', 'Confirmado'),

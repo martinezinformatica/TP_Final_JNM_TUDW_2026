@@ -7,16 +7,23 @@ class ProductoSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ItemPedidoSerializer(serializers.ModelSerializer):
-    # Esto traerá el nombre del producto en lugar de solo el ID
+    
     nombre_producto = serializers.ReadOnlyField(source='producto.nombre')
     
     class Meta:
         model = ItemPedido
         fields = ['id', 'producto', 'nombre_producto', 'cantidad', 'observacion']
 
+class MesaSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Mesa
+        fields = ['id', 'numero', 'capacidad']
+
+
 class PedidoSerializer(serializers.ModelSerializer):
     items = ItemPedidoSerializer(many=True, read_only=True)
-    estado_display = serializers.CharField(source='get_estado_display', read_only=True)
+    estado_display = serializers.CharField(source='get_estado_display', read_only=True)   
+    mesa = MesaSerializer(read_only=True) 
 
     class Meta:
         model = Pedido

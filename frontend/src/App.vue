@@ -3,65 +3,60 @@
     <nav class="navbar">
       <div class="logo">NATURAL MYSTIC</div>
       <div class="menu">
-        <button @click="seccionActual = 'inicio'">Inicio</button>
-        <button @click="seccionActual = 'carta'">Pedir</button>
-        <button @click="seccionActual = 'nosotros'">Nosotros</button>
-        <button @click="seccionActual = 'sugerencias'">Voz de nosotros</button>
-        <button @click="seccionActual = 'contacto'">Contacto</button>
+        <button
+          v-for="item in menuItems"
+          :key="item.id"
+          @click="seccionActual = item.id"
+          :class="['nav-btn', { activo: seccionActual === item.id }]"
+        >
+          {{ item.nombre }}
+        </button>
       </div>
     </nav>
 
     <main class="main-content">
-      
-      <section v-if="seccionActual === 'inicio'">
-        <div class="card-simple">
-          <h1>Bienvenidos</h1>
-          <p>Esta es la página principal de la cervecería.</p>
-        </div>
-      </section>
-
+      <Inicio v-if="seccionActual === 'inicio'" />
       <CartaDigital v-if="seccionActual === 'carta'" />
-
-      <section v-if="seccionActual === 'nosotros'">
-        <div class="card-simple">
-          <h1>Quiénes Somos</h1>
-          <p>Historia de Natural Mystic en General Roca.</p>
-        </div>
-      </section>
-
-      <section v-if="seccionActual === 'sugerencias'">
-        <div class="card-simple">
-          <h1>Voz de nosotros</h1>
-          <p>Sección para dejar comentarios y ver los últimos 3.</p>
-        </div>
-      </section>
-
-      <section v-if="seccionActual === 'contacto'">
-        <div class="card-simple">
-          <h1>Contacto</h1>
-          <p>📍 Dirección y Redes Sociales.</p>
-        </div>
-      </section>
-
+      <Sugerencias v-if="seccionActual === 'sugerencias'" />
+      <Nosotros v-if="seccionActual === 'nosotros'" />
+      <Contacto v-if="seccionActual === 'contacto'" />
+      <Cocina v-if="seccionActual === 'cocina'" />
+      <Administrador v-if="seccionActual === 'admin'" />
     </main>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import CartaDigital from './components/CartaDigital.vue'
+import { ref } from "vue";
+import Inicio from "./components/Inicio.vue";
+import CartaDigital from "./components/CartaDigital.vue";
+import Sugerencias from "./components/Sugerencias.vue";
+import Nosotros from "./components/Nosotros.vue";
+import Contacto from "./components/Contacto.vue";
+import Cocina from "./components/Cocina.vue";
+import Administrador from "./components/Admin.vue";
 
-// Variable que controla qué bloque se muestra
-const seccionActual = ref('inicio')
+const seccionActual = ref("carta");
+
+const menuItems = [
+  { id: "inicio", nombre: "Inicio" },
+  { id: "carta", nombre: "Pedir" },
+  { id: "nosotros", nombre: "Nosotros" },
+  { id: "sugerencias", nombre: "Voz de Nosotros" },
+  { id: "contacto", nombre: "Contacto" },
+  { id: "cocina", nombre: "Cocina" },
+  { id: "admin", nombre: "Administrador" },
+];
 </script>
 
 <style>
-/* Estética Base Muy Simple */
+@import url("https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap");
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
-  background-color: #1a1a1a;
-  color: white;
+  background-color: #121212;
+  font-family: "Roboto Mono", monospace;
+  color: #ccc;
 }
 
 .navbar {
@@ -69,38 +64,43 @@ body {
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: #000;
-  border-bottom: 1px solid #333;
+  background: #000;
+  border-bottom: 2px solid #c5a059;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
 }
 
 .logo {
+  color: #c5a059;
   font-weight: bold;
-  font-size: 1.2rem;
-  color: #c5a059;
+  font-size: 1.5rem;
+  letter-spacing: 3px;
 }
 
-.menu button {
+.nav-btn {
   background: none;
-  border: none;
-  color: white;
-  margin-left: 15px;
+  border: 1px solid transparent;
+  color: #c5a059;
+  margin-left: 10px;
+  padding: 8px 15px;
   cursor: pointer;
-  padding: 5px 10px;
+  text-transform: uppercase;
+  font-family: "Roboto Mono", monospace;
+  font-weight: bold;
+  border-radius: 4px;
+  transition: all 0.3s;
 }
 
-.menu button:hover {
-  color: #c5a059;
+.nav-btn:hover,
+.nav-btn.activo {
+  border: 1px solid #c5a059;
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
 }
 
 .main-content {
-  padding: 20px;
-}
-
-.card-simple {
-  background: #222;
-  padding: 40px;
-  border-radius: 8px;
-  text-align: center;
-  margin-top: 20px;
+  display: flex;
+  justify-content: center;
+  padding: 40px 20px;
 }
 </style>
