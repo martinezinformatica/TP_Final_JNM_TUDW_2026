@@ -53,6 +53,7 @@
         </div>
       </div>
 
+      <!-- PANEL DERECHO: ALERTAS DE STOCK -->
       <div class="card-mystic seccion-stock">
         <h2 class="subtitulo">Alertas de Stock</h2>
         <div class="lista-stock">
@@ -70,7 +71,27 @@
     </div>
 
     <div v-if="mesaSeleccionada" class="overlay-popup">
-      <div class="card-mystic popup-contenido">
+      <div class="card-mystic popup-contenido position-relative">
+        <div
+          v-if="comunicandoCliente"
+          class="cartel-comunicando animate-fade-in"
+        >
+          <div class="whatsapp-icon-mystic">
+            <span class="burbuja-icono">💬</span>
+          </div>
+          <h3 class="texto-comunicando">PEDIDO LISTO</h3>
+          <p class="subtexto-comunicando">
+            Se generó la alerta para el pedido
+            <strong class="resaltado-oro">#{{ idPedidoEntregado }}</strong> de
+            la <strong>Mesa {{ mesaSeleccionada }}</strong
+            >.
+          </p>
+          <div class="divisor-mystic-interno"></div>
+          <button @click="confirmarEnvioNotificacion" class="btn-enviar-aviso">
+            ENVIAR AVISO DE RETIRO (WHATSAPP)
+          </button>
+        </div>
+
         <h2 class="subtitulo">Detalle Mesa {{ mesaSeleccionada }}</h2>
 
         <div v-if="!pedidoDeMesa(mesaSeleccionada)" class="sin-datos">
@@ -103,7 +124,7 @@
           </button>
         </div>
 
-        <button @click="cerrarPopup" class="btn-cerrar">CERRAR WINDOWS</button>
+        <button @click="cerrarPopup" class="btn-cerrar">CERRAR PANEL</button>
       </div>
     </div>
   </div>
@@ -116,6 +137,8 @@ import api from "../api.js";
 const pedidos = ref([]);
 const productos = ref([]);
 const mesaSeleccionada = ref(null);
+const comunicandoCliente = ref(false);
+const idPedidoEntregado = ref(null);
 
 const cargarDatos = async () => {
   try {
@@ -165,16 +188,32 @@ const abrirMesa = (numMesa) => {
 
 const cerrarPopup = () => {
   mesaSeleccionada.value = null;
+  comunicandoCliente.value = false;
 };
 
 const procesarPedido = async (pedido) => {
   try {
-    await api.post(`pedidos/${pedido.id}/avanzar_estado/`);
-    await cargarDatos();
-    cerrarPopup();
+    if (pedido.estado === "PRE") {
+      idPedidoEntregado.value = pedido.id;
+
+      await api.post(`pedidos/${pedido.id}/avanzar_estado/`);
+      await cargarDatos();
+      comunicandoCliente.value = true;
+    } else {
+      await api.post(`pedidos/${pedido.id}/avanzar_estado/`);
+      await cargarDatos();
+      cerrarPopup();
+    }
   } catch (e) {
     alert("Error al actualizar el estado del pedido.");
+    comunicandoCliente.value = false;
   }
+};
+
+const confirmarEnvioNotificacion = () => {
+  comunicandoCliente.value = false;
+  idPedidoEntregado.value = null;
+  cerrarPopup();
 };
 
 onMounted(cargarDatos);
@@ -330,8 +369,8 @@ onMounted(cargarDatos);
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0, 0, 0, 0.85);
   display: flex;
   align-items: center;
@@ -340,7 +379,7 @@ onMounted(cargarDatos);
 }
 .popup-contenido {
   width: 100%;
-  max-width: 450px;
+  max-width: 460px;
   text-align: center;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
 }
@@ -403,5 +442,108 @@ onMounted(cargarDatos);
   padding: 20px;
   color: #666;
   font-style: italic;
+}
+.position-relative {
+  position: relative;
+  overflow: hidden;
+}
+
+.cartel-comunicando {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: #111111;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  padding: 30px;
+  box-sizing: border-box;
+}
+
+.whatsapp-icon-mystic {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #c5a059;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(197, 160, 89, 0.05);
+  box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+  margin-bottom: 10px;
+}
+
+.burbuja-icono {
+  font-size: 1.8rem;
+}
+
+.texto-comunicando {
+  color: #c5a059;
+  letter-spacing: 3px;
+  font-size: 1.3rem;
+  margin: 10px 0 15px 0;
+  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  font-weight: bold;
+}
+
+.subtexto-comunicando {
+  color: #dddddd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.resaltado-oro {
+  color: #c5a059;
+  font-weight: bold;
+}
+
+.subtexto-comunicando strong {
+  color: #fff;
+}
+
+.divisor-mystic-interno {
+  width: 85%;
+  height: 1px;
+  background: #252525;
+  margin: 25px 0;
+}
+
+.btn-enviar-aviso {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #c5a059;
+  color: #ffffff;
+  padding: 14px;
+  font-family: "Roboto Mono", monospace;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: 0.2s;
+  border-radius: 4px;
+}
+
+.btn-enviar-aviso:hover {
+  background: #c5a059;
+  color: #000000;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>

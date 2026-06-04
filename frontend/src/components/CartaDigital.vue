@@ -94,6 +94,36 @@
         </aside>
       </div>
     </div>
+
+    <div v-if="mostrarModalExito" class="overlay-popup-mystic">
+      <div class="card-mystic-modal popup-exito-contenido animate-fade-in">
+        <div class="icono-exito-oro">✓</div>
+        <h2 class="titulo-modal-oro">¡PEDIDO PROCESADO!</h2>
+        <p class="mensaje-modal-texto">
+          El pedido
+          <strong class="resaltado-nro">#{{ idPedidoCreado }}</strong> fue
+          enviado con éxito a la cocina.
+        </p>
+        <div class="divisor-mystic-modal"></div>
+        <button @click="cerrarModalExito" class="btn-modal-aceptar">
+          ACEPTAR
+        </button>
+      </div>
+    </div>
+
+    <div v-if="mostrarModalError" class="overlay-popup-mystic">
+      <div
+        class="card-mystic-modal popup-exito-contenido animate-fade-in error-borde"
+      >
+        <div class="icono-error-rojo">✕</div>
+        <h2 class="titulo-modal-rojo">ERROR</h2>
+        <p class="mensaje-modal-texto">{{ mensajeError }}</p>
+        <div class="divisor-mystic-modal un-rojo"></div>
+        <button @click="mostrarModalError = false" class="btn-modal-aceptar">
+          CERRAR
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -104,6 +134,10 @@ import { useCarritoStore } from "../stores/carritoStore";
 
 const carritoStore = useCarritoStore();
 const productos = ref([]);
+const mostrarModalExito = ref(false);
+const idPedidoCreado = ref(null);
+const mostrarModalError = ref(false);
+const mensajeError = ref("");
 
 const fetchProductos = async () => {
   try {
@@ -126,12 +160,22 @@ const enviarPedidoFinal = async () => {
 
   try {
     const res = await axios.post("http://localhost:8000/api/pedidos/", payload);
-    alert(`¡Pedido #${res.data.id} enviado con éxito!`);
+
+    idPedidoCreado.value = res.data.id;
+    mostrarModalExito.value = true;
+
     carritoStore.limpiarCarrito();
     await fetchProductos();
   } catch (error) {
-    alert("Error enviando pedido");
+    mensajeError.value =
+      "Ocurrió un problema al enviar el pedido a la cocina. Intente nuevamente.";
+    mostrarModalError.value = true;
   }
+};
+
+const cerrarModalExito = () => {
+  mostrarModalExito.value = false;
+  idPedidoCreado.value = null;
 };
 
 onMounted(fetchProductos);
@@ -493,6 +537,140 @@ onMounted(fetchProductos);
 .btn-confirmar-pedido:hover {
   background: #c5a059;
   color: #000000;
+}
+
+.overlay-popup-mystic {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+}
+
+.card-mystic-modal {
+  background: #111111;
+  border: 2px solid #c5a059;
+  padding: 35px 25px;
+  border-radius: 12px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(197, 160, 89, 0.2);
+}
+
+.popup-exito-contenido {
+  width: 90%;
+  max-width: 420px;
+  text-align: center;
+}
+
+.error-borde {
+  border-color: #ff4444 !important;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(255, 68, 68, 0.1) !important;
+}
+
+.icono-exito-oro {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #c5a059;
+  color: #c5a059;
+  border-radius: 50%;
+  font-size: 1.8rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  background: rgba(197, 160, 89, 0.05);
+}
+
+.icono-error-rojo {
+  width: 50px;
+  height: 50px;
+  border: 2px solid #ff4444;
+  color: #ff4444;
+  border-radius: 50%;
+  font-size: 1.6rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  background: rgba(255, 68, 68, 0.05);
+}
+
+.titulo-modal-oro {
+  color: #c5a059;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  margin: 0 0 15px 0;
+}
+
+.titulo-modal-rojo {
+  color: #ff4444;
+  font-size: 1.4rem;
+  letter-spacing: 2px;
+  margin: 0 0 15px 0;
+}
+
+.mensaje-modal-texto {
+  color: #dddddd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.resaltado-nro {
+  color: #ffffff;
+  border-bottom: 1px dashed #c5a059;
+  padding-bottom: 2px;
+}
+
+.divisor-mystic-modal {
+  width: 100%;
+  height: 1px;
+  background: #222222;
+  margin-bottom: 20px;
+}
+.divisor-mystic-modal.un-rojo {
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.btn-modal-aceptar {
+  width: 100%;
+  background: #1a1a1a;
+  border: 1px solid #c5a059;
+  color: #ffffff;
+  padding: 12px;
+  font-family: "Roboto Mono", monospace;
+  font-weight: bold;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: 0.2s;
+  border-radius: 4px;
+}
+.btn-modal-aceptar:hover {
+  background: #c5a059;
+  color: #000000;
+}
+
+.animate-fade-in {
+  animation: modalFadeIn 0.25s ease-out forwards;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 @media (max-width: 950px) {

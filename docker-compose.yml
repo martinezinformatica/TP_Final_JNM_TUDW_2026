@@ -9,6 +9,8 @@ services:
       POSTGRES_PASSWORD: ana_password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - red_proyecto
 
   backend:
     build: ./backend
@@ -25,7 +27,8 @@ services:
       - DB_HOST=db
     depends_on:
       - db
-
+    networks:
+      - red_proyecto
   frontend:
     build: ./frontend
     container_name: vue_frontend
@@ -39,6 +42,10 @@ services:
       - VITE_POLLING=true
     depends_on:
       - backend
-
+    networks:
+      - red_proyecto
 volumes:
   postgres_data:
+networks:
+  red_proyecto:
+    driver: bridge
