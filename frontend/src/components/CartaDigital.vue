@@ -15,7 +15,7 @@
     </div>
 
     <div v-if="!carritoStore.mesaSeleccionada" class="pantalla-inicio-centrada">
-      <div class="card-mesa-selector">
+      <div class="card-mystic-base card-mesa-selector">
         <h1 class="titulo-brillante">La Pizarra</h1>
         <p class="subtitulo-carta">General Roca • Pedí directamente a cocina</p>
         <div class="divisor-mystic centro"></div>
@@ -97,11 +97,13 @@
 
     <div v-if="mostrarModalExito" class="overlay-popup-mystic">
       <div class="card-mystic-modal popup-exito-contenido animate-fade-in">
-        <div class="icono-exito-oro">✓</div>
+        <div class="icono-exito-oro">
+          <span class="burbuja-icono">✓</span>
+        </div>
         <h2 class="titulo-modal-oro">¡PEDIDO PROCESADO!</h2>
         <p class="mensaje-modal-texto">
           El pedido
-          <strong class="resaltado-nro">#{{ idPedidoCreado }}</strong> fue
+          <strong class="resaltado-oro">#{{ idPedidoCreado }}</strong> fue
           enviado con éxito a la cocina.
         </p>
         <div class="divisor-mystic-modal"></div>
@@ -115,7 +117,9 @@
       <div
         class="card-mystic-modal popup-exito-contenido animate-fade-in error-borde"
       >
-        <div class="icono-error-rojo">✕</div>
+        <div class="icono-error-rojo">
+          <span class="burbuja-icono">✕</span>
+        </div>
         <h2 class="titulo-modal-rojo">ERROR</h2>
         <p class="mensaje-modal-texto">{{ mensajeError }}</p>
         <div class="divisor-mystic-modal un-rojo"></div>
@@ -129,7 +133,7 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import axios from "axios";
+import api from "../api.js";
 import { useCarritoStore } from "../stores/carritoStore";
 
 const carritoStore = useCarritoStore();
@@ -141,10 +145,10 @@ const mensajeError = ref("");
 
 const fetchProductos = async () => {
   try {
-    const response = await axios.get("http://localhost:8000/api/productos/");
+    const response = await api.get("productos/");
     productos.value = response.data;
   } catch (error) {
-    console.error("Error conectando con Django");
+    console.error("Error conectando con la API desde la Carta");
   }
 };
 
@@ -159,7 +163,7 @@ const enviarPedidoFinal = async () => {
   };
 
   try {
-    const res = await axios.post("http://localhost:8000/api/pedidos/", payload);
+    const res = await api.post("pedidos/", payload);
 
     idPedidoCreado.value = res.data.id;
     mostrarModalExito.value = true;
@@ -260,11 +264,14 @@ onMounted(fetchProductos);
   width: 100%;
 }
 
-.card-mesa-selector {
+.card-mystic-base {
   background: #1a1a1a;
-  padding: 45px;
-  border-radius: 15px;
   border: 1px solid #c5a059;
+  padding: 45px;
+  border-radius: 12px;
+}
+
+.card-mesa-selector {
   text-align: center;
   max-width: 500px;
   width: 100%;
@@ -564,7 +571,7 @@ onMounted(fetchProductos);
 
 .popup-exito-contenido {
   width: 90%;
-  max-width: 420px;
+  max-width: 440px;
   text-align: center;
 }
 
@@ -576,45 +583,53 @@ onMounted(fetchProductos);
 }
 
 .icono-exito-oro {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border: 2px solid #c5a059;
   color: #c5a059;
   border-radius: 50%;
-  font-size: 1.8rem;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px auto;
   background: rgba(197, 160, 89, 0.05);
+  box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
 }
 
 .icono-error-rojo {
-  width: 50px;
-  height: 50px;
+  width: 60px;
+  height: 60px;
   border: 2px solid #ff4444;
   color: #ff4444;
   border-radius: 50%;
-  font-size: 1.6rem;
   display: flex;
   align-items: center;
   justify-content: center;
   margin: 0 auto 20px auto;
   background: rgba(255, 68, 68, 0.05);
+  box-shadow: 0 0 15px rgba(255, 68, 68, 0.2);
+}
+
+.burbuja-icono {
+  font-size: 1.6rem;
+  font-weight: bold;
 }
 
 .titulo-modal-oro {
   color: #c5a059;
-  font-size: 1.4rem;
-  letter-spacing: 2px;
-  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  margin: 10px 0 15px 0;
+  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  font-weight: bold;
 }
 
 .titulo-modal-rojo {
   color: #ff4444;
-  font-size: 1.4rem;
-  letter-spacing: 2px;
-  margin: 0 0 15px 0;
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  margin: 10px 0 15px 0;
+  font-weight: bold;
 }
 
 .mensaje-modal-texto {
@@ -624,17 +639,16 @@ onMounted(fetchProductos);
   margin: 0 0 20px 0;
 }
 
-.resaltado-nro {
-  color: #ffffff;
-  border-bottom: 1px dashed #c5a059;
-  padding-bottom: 2px;
+.resaltado-oro {
+  color: #c5a059;
+  font-weight: bold;
 }
 
 .divisor-mystic-modal {
-  width: 100%;
+  width: 85%;
   height: 1px;
-  background: #222222;
-  margin-bottom: 20px;
+  background: #252525;
+  margin: 25px auto;
 }
 .divisor-mystic-modal.un-rojo {
   background: rgba(255, 68, 68, 0.2);
@@ -645,7 +659,7 @@ onMounted(fetchProductos);
   background: #1a1a1a;
   border: 1px solid #c5a059;
   color: #ffffff;
-  padding: 12px;
+  padding: 14px;
   font-family: "Roboto Mono", monospace;
   font-weight: bold;
   cursor: pointer;
@@ -659,13 +673,13 @@ onMounted(fetchProductos);
 }
 
 .animate-fade-in {
-  animation: modalFadeIn 0.25s ease-out forwards;
+  animation: modalFadeIn 0.2s ease-in-out forwards;
 }
 
 @keyframes modalFadeIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;

@@ -1,7 +1,6 @@
 from django.contrib import admin
 from .models import Producto, Mesa, Pedido, ItemPedido
 
-# Esto permite cargar productos dentro del mismo formulario de Pedido
 class ItemPedidoInline(admin.TabularInline):
     model = ItemPedido
     extra = 1

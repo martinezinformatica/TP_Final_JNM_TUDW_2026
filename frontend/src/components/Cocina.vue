@@ -52,8 +52,6 @@
           </div>
         </div>
       </div>
-
-      <!-- PANEL DERECHO: ALERTAS DE STOCK -->
       <div class="card-mystic seccion-stock">
         <h2 class="subtitulo">Alertas de Stock</h2>
         <div class="lista-stock">
@@ -69,30 +67,33 @@
         </div>
       </div>
     </div>
-
-    <div v-if="mesaSeleccionada" class="overlay-popup">
-      <div class="card-mystic popup-contenido position-relative">
-        <div
-          v-if="comunicandoCliente"
-          class="cartel-comunicando animate-fade-in"
-        >
-          <div class="whatsapp-icon-mystic">
-            <span class="burbuja-icono">💬</span>
-          </div>
-          <h3 class="texto-comunicando">PEDIDO LISTO</h3>
-          <p class="subtexto-comunicando">
-            Se generó la alerta para el pedido
-            <strong class="resaltado-oro">#{{ idPedidoEntregado }}</strong> de
-            la <strong>Mesa {{ mesaSeleccionada }}</strong
-            >.
-          </p>
-          <div class="divisor-mystic-interno"></div>
-          <button @click="confirmarEnvioNotificacion" class="btn-enviar-aviso">
-            ENVIAR AVISO DE RETIRO (WHATSAPP)
-          </button>
+    <div v-if="mesaSeleccionada" class="overlay-popup-mystic">
+      <div
+        v-if="comunicandoCliente"
+        class="card-mystic-modal popup-exito-contenido animate-fade-in"
+      >
+        <div class="icono-exito-oro">
+          <span class="burbuja-icono">💬</span>
         </div>
+        <h2 class="titulo-modal-oro">PEDIDO LISTO</h2>
+        <p class="mensaje-modal-texto">
+          Se generó la notificación para la
+          <strong class="resaltado-oro">Mesa {{ mesaSeleccionada }}</strong
+          >: "Tu pedido
+          <strong class="resaltado-oro">#{{ idPedidoEntregado }}</strong> está
+          listo en barra".
+        </p>
+        <div class="divisor-mystic-modal"></div>
+        <button @click="confirmarEnvioNotificacion" class="btn-modal-aceptar">
+          ENVIAR AVISO DE RETIRO (WHATSAPP)
+        </button>
+      </div>
 
-        <h2 class="subtitulo">Detalle Mesa {{ mesaSeleccionada }}</h2>
+      <div
+        v-else
+        class="card-mystic-modal popup-exito-contenido animate-fade-in"
+      >
+        <h2 class="titulo-modal-oro">Detalle Mesa {{ mesaSeleccionada }}</h2>
 
         <div v-if="!pedidoDeMesa(mesaSeleccionada)" class="sin-datos">
           No hay pedidos activos para esta mesa.
@@ -114,7 +115,7 @@
 
           <button
             @click="procesarPedido(pedidoDeMesa(mesaSeleccionada))"
-            class="btn-amarillo-cocina"
+            class="btn-modal-aceptar"
           >
             {{
               pedidoDeMesa(mesaSeleccionada).estado === "NUE"
@@ -124,7 +125,10 @@
           </button>
         </div>
 
-        <button @click="cerrarPopup" class="btn-cerrar">CERRAR PANEL</button>
+        <div class="divisor-mystic-modal"></div>
+        <button @click="cerrarPopup" class="btn-cerrar-volver">
+          VOLVER AL PLANO
+        </button>
       </div>
     </div>
   </div>
@@ -357,15 +361,16 @@ onMounted(cargarDatos);
   background: #2a2a2a;
   padding: 12px;
   border-radius: 6px;
-  border: 1px solid #c5a059;
+  border: 1px solid #333;
   color: #ffffff;
   font-size: 0.9rem;
 }
 .alerta-critica {
   color: #ff4444;
+  border-color: rgba(255, 68, 68, 0.4);
 }
 
-.overlay-popup {
+.overlay-popup-mystic {
   position: fixed;
   top: 0;
   left: 0;
@@ -375,13 +380,71 @@ onMounted(cargarDatos);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 999;
+  z-index: 2000;
 }
-.popup-contenido {
-  width: 100%;
+
+.card-mystic-modal {
+  background: #111111;
+  border: 2px solid #c5a059;
+  padding: 35px 25px;
+  border-radius: 12px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.8),
+    0 0 15px rgba(197, 160, 89, 0.2);
+}
+
+.popup-exito-contenido {
+  width: 90%;
   max-width: 460px;
   text-align: center;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+}
+
+.icono-exito-oro {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #c5a059;
+  color: #c5a059;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px auto;
+  background: rgba(197, 160, 89, 0.05);
+  box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
+}
+
+.burbuja-icono {
+  font-size: 1.6rem;
+  font-weight: bold;
+}
+
+.titulo-modal-oro {
+  color: #c5a059;
+  font-size: 1.3rem;
+  letter-spacing: 3px;
+  margin: 10px 0 15px 0;
+  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.mensaje-modal-texto {
+  color: #dddddd;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin: 0 0 20px 0;
+}
+
+.resaltado-oro {
+  color: #c5a059;
+  font-weight: bold;
+}
+
+.divisor-mystic-modal {
+  width: 85%;
+  height: 1px;
+  background: #252525;
+  margin: 25px auto;
 }
 
 .lista-items-cocina {
@@ -407,113 +470,14 @@ onMounted(cargarDatos);
   font-style: italic;
 }
 
-.btn-amarillo-cocina {
-  width: 100%;
-  background: #2a2a2a;
-  border: 1px solid #c5a059;
-  color: #ffffff;
-  padding: 14px;
-  cursor: pointer;
-  font-weight: bold;
-  letter-spacing: 1px;
-  transition: 0.2s;
-  margin-bottom: 15px;
-}
-.btn-amarillo-cocina:hover {
-  background: #c5a059;
-  color: #000000;
-}
-
-.btn-cerrar {
-  background: #2a2a2a;
-  border: 1px solid #c5a059;
-  color: #ffffff;
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 0.8rem;
-  border-radius: 4px;
-  transition: 0.2s;
-}
-.btn-cerrar:hover {
-  background: #c5a059;
-  color: #000000;
-}
 .sin-datos {
   padding: 20px;
   color: #666;
   font-style: italic;
 }
-.position-relative {
-  position: relative;
-  overflow: hidden;
-}
 
-.cartel-comunicando {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: #111111;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  z-index: 10;
-  padding: 30px;
-  box-sizing: border-box;
-}
-
-.whatsapp-icon-mystic {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #c5a059;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(197, 160, 89, 0.05);
-  box-shadow: 0 0 15px rgba(197, 160, 89, 0.2);
-  margin-bottom: 10px;
-}
-
-.burbuja-icono {
-  font-size: 1.8rem;
-}
-
-.texto-comunicando {
-  color: #c5a059;
-  letter-spacing: 3px;
-  font-size: 1.3rem;
-  margin: 10px 0 15px 0;
-  text-shadow: 0 0 10px rgba(197, 160, 89, 0.3);
-  font-weight: bold;
-}
-
-.subtexto-comunicando {
-  color: #dddddd;
-  font-size: 0.95rem;
-  line-height: 1.5;
-  margin: 0;
-}
-
-.resaltado-oro {
-  color: #c5a059;
-  font-weight: bold;
-}
-
-.subtexto-comunicando strong {
-  color: #fff;
-}
-
-.divisor-mystic-interno {
-  width: 85%;
-  height: 1px;
-  background: #252525;
-  margin: 25px 0;
-}
-
-.btn-enviar-aviso {
+/* BOTÓN ACCIÓN DEL MODAL */
+.btn-modal-aceptar {
   width: 100%;
   background: #1a1a1a;
   border: 1px solid #c5a059;
@@ -526,17 +490,33 @@ onMounted(cargarDatos);
   transition: 0.2s;
   border-radius: 4px;
 }
-
-.btn-enviar-aviso:hover {
+.btn-modal-aceptar:hover {
   background: #c5a059;
   color: #000000;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.2s ease-in-out forwards;
+.btn-cerrar-volver {
+  background: transparent;
+  border: 1px solid #444;
+  color: #888;
+  padding: 10px 20px;
+  font-family: "Roboto Mono", monospace;
+  cursor: pointer;
+  font-size: 0.8rem;
+  border-radius: 4px;
+  transition: 0.2s;
+  letter-spacing: 1px;
+}
+.btn-cerrar-volver:hover {
+  border-color: #c5a059;
+  color: #fff;
 }
 
-@keyframes fadeIn {
+.animate-fade-in {
+  animation: modalFadeIn 0.2s ease-in-out forwards;
+}
+
+@keyframes modalFadeIn {
   from {
     opacity: 0;
     transform: scale(0.97);
@@ -544,6 +524,12 @@ onMounted(cargarDatos);
   to {
     opacity: 1;
     transform: scale(1);
+  }
+}
+
+@media (max-width: 850px) {
+  .cocina-layout {
+    grid-template-columns: 1fr;
   }
 }
 </style>
