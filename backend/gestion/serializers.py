@@ -17,7 +17,7 @@ class ItemPedidoSerializer(serializers.ModelSerializer):
 class MesaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Mesa
-        fields = ['id', 'numero', 'capacidad']
+        fields = ['id', 'numero', 'capacidad', 'esta_libre']
 
 
 class PedidoSerializer(serializers.ModelSerializer):

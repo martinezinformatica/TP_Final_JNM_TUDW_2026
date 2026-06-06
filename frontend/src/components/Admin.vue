@@ -27,14 +27,41 @@
         </button>
       </div>
 
-      <div class="card-mystic">
+      <div class="card-mystic form-crear-mesa">
         <h2 class="subtitulo">Nueva Mesa</h2>
-        <input
-          v-model="nuevaMesa.numero"
-          type="number"
-          placeholder="Número de mesa"
-          class="input-mystic"
-        />
+
+        <div class="form-group-mystic">
+          <input
+            v-model="nuevaMesa.numero"
+            type="number"
+            placeholder="Numero de Mesa"
+            class="input-mystic"
+          />
+        </div>
+
+        <div class="form-group-mystic">
+          <input
+            v-model="nuevaMesa.capacidad"
+            type="number"
+            min="1"
+            placeholder="Cantidad de personas"
+            class="input-mystic"
+          />
+        </div>
+
+        <div class="form-group-mystic checkbox-mystic-container">
+          <label class="checkbox-mystic-label">
+            <input
+              v-model="nuevaMesa.esta_libre"
+              type="checkbox"
+              class="checkbox-mystic-input"
+            />
+            <span class="checkbox-mystic-text"
+              >¿Iniciar como mesa ocupada?</span
+            >
+          </label>
+        </div>
+
         <button @click="crearMesa" class="btn-confirmar-pedido">
           AGREGAR MESA
         </button>
@@ -54,7 +81,8 @@
               <div class="texto-prod-wrap">
                 <span class="nombre">{{ prod.nombre }}</span>
                 <span class="detalle"
-                  >${{ prod.precio }} | Stock: {{ prod.stock }}</span
+                  >{{ formatearPrecio(prod.precio) }} | Stock:
+                  {{ prod.stock }}</span
                 >
               </div>
               <div class="acciones">
@@ -145,7 +173,9 @@
             <span class="fecha">{{
               formatearFecha(pedido.fecha_creacion)
             }}</span>
-            <span class="total-venta">Total: ${{ pedido.total }}</span>
+            <span class="total-venta"
+              >Total: {{ formatearPrecio(pedido.total) }}</span
+            >
           </div>
           <ul class="venta-detalles">
             <li v-for="item in pedido.items" :key="item.id">
@@ -163,19 +193,20 @@ import { ref, computed, onMounted } from "vue";
 import api from "../api.js";
 
 const nuevoProd = ref({ nombre: "", precio: "", stock: "" });
-const nuevaMesa = ref({ numero: null });
+const nuevaMesa = ref({ numero: null, capacidad: "", esta_libre: false });
 const productos = ref([]);
 const ventas = ref([]);
 const productoEditandoId = ref(null);
 const prodEditado = ref({ nombre: "", precio: 0, stock: 0 });
-
 const cargarDatos = async () => {
   try {
     const resProd = await api.get("productos/");
     productos.value = resProd.data;
-
     const resPedidos = await api.get("pedidos/");
-    ventas.value = resPedidos.data.filter((p) => p.estado === "ENT");
+    const pedidosEntregados = resPedidos.data.filter((p) => p.estado === "ENT");
+    ventas.value = pedidosEntregados.sort((a, b) => {
+      return new Date(b.fecha_creacion) - new Date(a.fecha_creacion);
+    });
   } catch (e) {
     console.error("Error cargando datos de administración:", e);
   }
@@ -219,14 +250,26 @@ const crearProducto = async () => {
   }
 };
 
+const formatearPrecio = (valor) => {
+  if (!valor) return "$0";
+  const entero = Math.floor(Number(valor));
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(entero);
+};
+
 const crearMesa = async () => {
   try {
     await api.post("mesas/", nuevaMesa.value);
-    alert("Mesa agregada");
-    nuevaMesa.value = { numero: null };
+    alert("Mesa agregada con éxito");
+
+    nuevaMesa.value = { numero: null, capacidad: 4, esta_libre: true };
     cargarDatos();
   } catch (e) {
-    alert("Error al crear mesa");
+    alert("Error al crear mesa. Verificá si el número ya existe.");
   }
 };
 
@@ -305,6 +348,46 @@ onMounted(cargarDatos);
   margin-bottom: 40px;
 }
 
+.form-crear-mesa {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.form-group-mystic {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+}
+.label-mystic {
+  color: #c5a059;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-left: 2px;
+}
+.checkbox-mystic-container {
+  margin-top: 5px;
+  margin-bottom: 5px;
+}
+.checkbox-mystic-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+}
+.checkbox-mystic-input {
+  width: 16px;
+  height: 16px;
+  accent-color: #c5a059;
+  cursor: pointer;
+}
+.checkbox-mystic-text {
+  color: #cccccc;
+  font-size: 0.9rem;
+}
+
 .listas-paralelo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -346,7 +429,7 @@ onMounted(cargarDatos);
 .input-mystic {
   width: 100%;
   padding: 12px;
-  margin: 10px 0;
+  margin: 8px 0;
   background: #000;
   border: 1px solid #333;
   color: white;

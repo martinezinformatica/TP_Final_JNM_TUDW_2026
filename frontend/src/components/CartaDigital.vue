@@ -48,17 +48,26 @@
             <div v-for="p in productos" :key="p.id" class="producto-card">
               <div class="producto-info">
                 <h3>{{ p.nombre }}</h3>
-                <p class="precio">${{ p.precio }}</p>
-                <p class="stock" :class="{ 'sin-stock': p.stock <= 0 }">
-                  {{ p.stock > 0 ? "Disponible" : "Sin Stock" }}
+                <p class="precio">{{ formatearPrecio(p.precio) }}</p>
+
+                <p
+                  class="stock"
+                  :class="{ 'sin-stock': obtenerStockDisponible(p) <= 0 }"
+                >
+                  {{
+                    obtenerStockDisponible(p) > 0
+                      ? `Disponible`
+                      : "No disponible"
+                  }}
                 </p>
               </div>
+
               <button
                 @click="carritoStore.agregarProducto(p)"
-                :disabled="p.stock <= 0"
+                :disabled="obtenerStockDisponible(p) <= 0"
                 class="btn-agregar-producto"
               >
-                {{ p.stock > 0 ? "+ AGREGAR" : "AGOTADO" }}
+                {{ obtenerStockDisponible(p) > 0 ? "+ AGREGAR" : "AGOTADO" }}
               </button>
             </div>
           </div>
@@ -72,7 +81,9 @@
             <li v-for="(item, index) in carritoStore.items" :key="index">
               <div class="item-linea">
                 <span class="nombre-item">{{ item.nombre }}</span>
-                <span class="precio-item">${{ item.precio }}</span>
+                <span class="precio-item">{{
+                  formatearPrecio(item.precio)
+                }}</span>
               </div>
               <button
                 @click="carritoStore.quitarProducto(index)"
@@ -85,7 +96,9 @@
 
           <div class="total-seccion">
             <p class="total-label">TOTAL</p>
-            <p class="total-monto">${{ carritoStore.totalPedido }}</p>
+            <p class="total-monto">
+              {{ formatearPrecio(carritoStore.totalPedido) }}
+            </p>
           </div>
 
           <button @click="enviarPedidoFinal" class="btn-confirmar-pedido">
@@ -142,7 +155,6 @@ const mostrarModalExito = ref(false);
 const idPedidoCreado = ref(null);
 const mostrarModalError = ref(false);
 const mensajeError = ref("");
-
 const fetchProductos = async () => {
   try {
     const response = await api.get("productos/");
@@ -151,17 +163,43 @@ const fetchProductos = async () => {
     console.error("Error conectando con la API desde la Carta");
   }
 };
-
+const obtenerStockDisponible = (producto) => {
+  if (!producto) return 0;
+  const cantidadEnCarrito = carritoStore.items.filter(
+    (item) => item.id === producto.id,
+  ).length;
+  return producto.stock - cantidadEnCarrito;
+};
 const enviarPedidoFinal = async () => {
+  const tieneItemsSinStock = carritoStore.items.some((item) => {
+    const prodOriginal = productos.value.find((p) => p.id === item.id);
+    return !prodOriginal || prodOriginal.stock <= 0;
+  });
+
+  if (tieneItemsSinStock) {
+    mensajeError.value =
+      "Uno de los productos de tu pedido se quedó sin stock. Modificá el carrito antes de enviar.";
+    mostrarModalError.value = true;
+    await fetchProductos();
+    return;
+  }
+  const itemsAgrupados = [];
+  carritoStore.items.forEach((item) => {
+    const yaExiste = itemsAgrupados.find((i) => i.producto === item.id);
+    if (yaExiste) {
+      yaExiste.cantidad += 1;
+    } else {
+      itemsAgrupados.push({
+        producto: item.id,
+        cantidad: 1,
+        observacion: "",
+      });
+    }
+  });
   const payload = {
     mesa: carritoStore.mesaId,
-    items: carritoStore.items.map((item) => ({
-      producto: item.id,
-      cantidad: 1,
-      observacion: "",
-    })),
+    items: itemsAgrupados,
   };
-
   try {
     const res = await api.post("pedidos/", payload);
 
@@ -171,20 +209,33 @@ const enviarPedidoFinal = async () => {
     carritoStore.limpiarCarrito();
     await fetchProductos();
   } catch (error) {
-    mensajeError.value =
-      "Ocurrió un problema al enviar el pedido a la cocina. Intente nuevamente.";
+    if (error.response && error.response.status === 400) {
+      mensajeError.value =
+        "Error: Algunos productos elegidos superan el stock disponible actual de la barra.";
+    } else {
+      mensajeError.value =
+        "Ocurrió un problema al enviar el pedido a la cocina. Intente nuevamente.";
+    }
     mostrarModalError.value = true;
+    await fetchProductos();
   }
 };
-
+const formatearPrecio = (valor) => {
+  if (!valor) return "$0";
+  const entero = Math.floor(Number(valor));
+  return new Intl.NumberFormat("es-AR", {
+    style: "currency",
+    currency: "ARS",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(entero);
+};
 const cerrarModalExito = () => {
   mostrarModalExito.value = false;
   idPedidoCreado.value = null;
 };
-
 onMounted(fetchProductos);
 </script>
-
 <style scoped>
 .carta-container {
   width: 100vw;
@@ -196,7 +247,6 @@ onMounted(fetchProductos);
   color: white;
   box-sizing: border-box;
 }
-
 .posavasos-mesa {
   position: absolute;
   top: 0px;
@@ -414,9 +464,11 @@ onMounted(fetchProductos);
 }
 .sin-stock {
   color: #ff4444 !important;
+  font-weight: bold;
 }
 
 .btn-agregar-producto {
+  width: 100%;
   background: #1a1a1a;
   border: none;
   border-top: 1px solid #222;
@@ -433,7 +485,9 @@ onMounted(fetchProductos);
   color: #000000;
 }
 .btn-agregar-producto:disabled {
-  color: #444;
+  color: #ff4444;
+  background: #150505;
+  border-top: 1px solid #301010;
   cursor: not-allowed;
 }
 
