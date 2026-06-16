@@ -1,6 +1,11 @@
 <template>
   <div class="admin-container">
-    <h1 class="titulo-brillante">PANEL DE CONTROL Y ADMINISTRACIÓN</h1>
+    <div class="admin-header">
+      <h1 class="titulo-brillante">PANEL DE CONTROL Y ADMINISTRACIÓN</h1>
+      <button @click="ejecutarCerrarSesion" class="btn-logout-panel">
+        CERRAR SESIÓN
+      </button>
+    </div>
 
     <div class="forms-grid">
       <div class="card-mystic">
@@ -15,12 +20,14 @@
           type="number"
           placeholder="Precio"
           class="input-mystic"
+          @focus="limpiarSiCero(nuevoProd, 'precio')"
         />
         <input
           v-model="nuevoProd.stock"
           type="number"
           placeholder="Stock"
           class="input-mystic"
+          @focus="limpiarSiCero(nuevoProd, 'stock')"
         />
         <button @click="crearProducto" class="btn-confirmar-pedido">
           CREAR PRODUCTO
@@ -36,6 +43,7 @@
             type="number"
             placeholder="Numero de Mesa"
             class="input-mystic"
+            @focus="limpiarSiCero(nuevaMesa, 'numero')"
           />
         </div>
 
@@ -46,16 +54,20 @@
             min="1"
             placeholder="Cantidad de personas"
             class="input-mystic"
+            @focus="limpiarSiCero(nuevaMesa, 'capacidad')"
           />
         </div>
 
         <div class="form-group-mystic checkbox-mystic-container">
           <label class="checkbox-mystic-label">
-            <input
-              v-model="nuevaMesa.esta_libre"
-              type="checkbox"
-              class="checkbox-mystic-input"
-            />
+            <div class="checkbox-custom-wrapper">
+              <input
+                v-model="nuevaMesa.esta_libre"
+                type="checkbox"
+                class="checkbox-mystic-input"
+              />
+              <span class="checkbox-mystic-box"></span>
+            </div>
             <span class="checkbox-mystic-text"
               >¿Iniciar como mesa ocupada?</span
             >
@@ -107,11 +119,13 @@
                 v-model="prodEditado.precio"
                 type="number"
                 class="input-mystic mini"
+                @focus="limpiarSiCero(prodEditado, 'precio')"
               />
               <input
                 v-model="prodEditado.stock"
                 type="number"
                 class="input-mystic mini"
+                @focus="limpiarSiCero(prodEditado, 'stock')"
               />
               <div class="acciones">
                 <button
@@ -191,6 +205,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import api from "../api.js";
+import { useAuthStore } from "../stores/auth.js";
+
+const authStore = useAuthStore();
 
 const nuevoProd = ref({ nombre: "", precio: "", stock: "" });
 const nuevaMesa = ref({ numero: null, capacidad: "", esta_libre: false });
@@ -198,6 +215,21 @@ const productos = ref([]);
 const ventas = ref([]);
 const productoEditandoId = ref(null);
 const prodEditado = ref({ nombre: "", precio: 0, stock: 0 });
+
+// Función para cerrar la sesión del Administrador
+const ejecutarCerrarSesion = () => {
+  if (confirm("¿Querés cerrar la sesión de Administración?")) {
+    authStore.logout();
+    window.location.reload();
+  }
+};
+
+const limpiarSiCero = (objeto, propiedad) => {
+  if (objeto[propiedad] === 0 || objeto[propiedad] === "0") {
+    objeto[propiedad] = "";
+  }
+};
+
 const cargarDatos = async () => {
   try {
     const resProd = await api.get("productos/");
@@ -326,13 +358,42 @@ onMounted(cargarDatos);
   color: white;
   font-family: "Roboto Mono", monospace;
 }
+
+.admin-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  border-bottom: 2px solid #c5a059;
+  padding-bottom: 15px;
+}
+
 .titulo-brillante {
   color: #c5a059;
   text-transform: uppercase;
   letter-spacing: 4px;
-  text-align: center;
-  margin-bottom: 40px;
+  text-align: left;
+  margin: 0;
 }
+
+.btn-logout-panel {
+  background: #000;
+  border: 1px solid #c5a059;
+  color: #c5a059;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-weight: bold;
+  font-family: "Roboto Mono", monospace;
+  transition: all 0.3s ease;
+  border-radius: 4px;
+}
+
+.btn-logout-panel:hover {
+  background: #c5a059;
+  color: #000;
+  box-shadow: 0 0 12px rgba(197, 160, 89, 0.6);
+}
+
 .subtitulo {
   color: #c5a059;
   margin-bottom: 20px;
@@ -359,47 +420,79 @@ onMounted(cargarDatos);
   gap: 4px;
   text-align: left;
 }
-.label-mystic {
-  color: #c5a059;
-  font-size: 0.8rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-left: 2px;
-}
+
 .checkbox-mystic-container {
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
 }
 .checkbox-mystic-label {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
   user-select: none;
 }
+.checkbox-custom-wrapper {
+  position: relative;
+  width: 20px;
+  height: 20px;
+}
 .checkbox-mystic-input {
-  width: 16px;
-  height: 16px;
-  accent-color: #c5a059;
+  position: absolute;
+  opacity: 0;
   cursor: pointer;
+  height: 0;
+  width: 0;
+}
+.checkbox-mystic-box {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 20px;
+  width: 20px;
+  background-color: #000;
+  border: 1px solid #333;
+  border-radius: 4px;
+  transition: all 0.2s ease-in-out;
+}
+.checkbox-mystic-label:hover .checkbox-mystic-box {
+  border-color: #c5a059;
+  box-shadow: 0 0 8px rgba(197, 160, 89, 0.3);
+}
+.checkbox-mystic-input:checked ~ .checkbox-mystic-box {
+  background-color: #c5a059;
+  border-color: #c5a059;
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+}
+.checkbox-mystic-box:after {
+  content: "";
+  position: absolute;
+  display: none;
+  left: 6px;
+  top: 2px;
+  width: 5px;
+  height: 10px;
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.checkbox-mystic-input:checked ~ .checkbox-mystic-box:after {
+  display: block;
 }
 .checkbox-mystic-text {
   color: #cccccc;
-  font-size: 0.9rem;
+  font-size: 0.95rem;
 }
-
 .listas-paralelo-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 30px;
 }
-
 .contenedor-scrollable {
   max-height: 400px;
   overflow-y: auto;
   padding-right: 5px;
 }
-
 .contenedor-scrollable::-webkit-scrollbar {
   width: 6px;
 }
@@ -410,7 +503,6 @@ onMounted(cargarDatos);
 .contenedor-scrollable::-webkit-scrollbar-track {
   background: #000;
 }
-
 .card-mystic {
   background: #1a1a1a;
   border: 1px solid #c5a059;
@@ -418,14 +510,12 @@ onMounted(cargarDatos);
   border-radius: 12px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
 }
-
 .tabla-seccion {
   margin-bottom: 40px;
 }
 .historial-bajar {
   margin-top: 10px;
 }
-
 .input-mystic {
   width: 100%;
   padding: 12px;
@@ -435,6 +525,17 @@ onMounted(cargarDatos);
   color: white;
   border-radius: 6px;
   box-sizing: border-box;
+  font-family: "Roboto Mono", monospace;
+  transition: border-color 0.2s;
+}
+.input-mystic:focus {
+  outline: none;
+  border-color: #c5a059;
+}
+.input-mystic[type="number"]::-webkit-outer-spin-button,
+.input-mystic[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
 }
 .input-mystic.mini {
   width: 80px;
@@ -574,6 +675,14 @@ onMounted(cargarDatos);
   .forms-grid,
   .listas-paralelo-grid {
     grid-template-columns: 1fr;
+  }
+  .admin-header {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  .titulo-brillante {
+    text-align: center;
   }
 }
 </style>

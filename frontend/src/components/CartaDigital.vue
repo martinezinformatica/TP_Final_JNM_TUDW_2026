@@ -6,11 +6,11 @@
         <span class="numero">{{ carritoStore.mesaId }}</span>
       </div>
       <button
-        @click="carritoStore.resetMesa()"
-        class="btn-cambiar-mesa"
-        title="Cambiar Mesa"
+        @click="ejecutarCerrarMesa"
+        class="btn-salir-mesa"
+        title="Cerrar Mesa / Salir"
       >
-        ✎
+        SALIR
       </button>
     </div>
 
@@ -148,13 +148,24 @@
 import { ref, onMounted } from "vue";
 import api from "../api.js";
 import { useCarritoStore } from "../stores/carritoStore";
+import { useAuthStore } from "../stores/auth.js";
 
 const carritoStore = useCarritoStore();
+const authStore = useAuthStore();
 const productos = ref([]);
 const mostrarModalExito = ref(false);
 const idPedidoCreado = ref(null);
 const mostrarModalError = ref(false);
 const mensajeError = ref("");
+const ejecutarCerrarMesa = () => {
+  if (confirm("¿Deseas cerrar la mesa y salir del sistema?")) {
+    carritoStore.limpiarCarrito();
+    carritoStore.resetMesa();
+    authStore.logout();
+    window.location.reload();
+  }
+};
+
 const fetchProductos = async () => {
   try {
     const response = await api.get("productos/");
@@ -163,6 +174,7 @@ const fetchProductos = async () => {
     console.error("Error conectando con la API desde la Carta");
   }
 };
+
 const obtenerStockDisponible = (producto) => {
   if (!producto) return 0;
   const cantidadEnCarrito = carritoStore.items.filter(
@@ -170,6 +182,7 @@ const obtenerStockDisponible = (producto) => {
   ).length;
   return producto.stock - cantidadEnCarrito;
 };
+
 const enviarPedidoFinal = async () => {
   const tieneItemsSinStock = carritoStore.items.some((item) => {
     const prodOriginal = productos.value.find((p) => p.id === item.id);
@@ -220,6 +233,7 @@ const enviarPedidoFinal = async () => {
     await fetchProductos();
   }
 };
+
 const formatearPrecio = (valor) => {
   if (!valor) return "$0";
   const entero = Math.floor(Number(valor));
@@ -230,12 +244,15 @@ const formatearPrecio = (valor) => {
     maximumFractionDigits: 0,
   }).format(entero);
 };
+
 const cerrarModalExito = () => {
   mostrarModalExito.value = false;
   idPedidoCreado.value = null;
 };
+
 onMounted(fetchProductos);
 </script>
+
 <style scoped>
 .carta-container {
   width: 100vw;
@@ -247,14 +264,15 @@ onMounted(fetchProductos);
   color: white;
   box-sizing: border-box;
 }
+
 .posavasos-mesa {
   position: absolute;
   top: 0px;
   right: 20px;
   background: #111;
   border: 2px solid #c5a059;
-  width: 75px;
-  height: 75px;
+  width: 85px;
+  height: 85px;
   border-radius: 50%;
   display: flex;
   flex-direction: column;
@@ -264,46 +282,45 @@ onMounted(fetchProductos);
     0 4px 15px rgba(0, 0, 0, 0.6),
     0 0 10px rgba(197, 160, 89, 0.2);
   z-index: 10;
+  padding: 5px;
+  box-sizing: border-box;
 }
 
 .mesa-info {
   text-align: center;
-  line-height: 1.1;
+  line-height: 1;
+  margin-top: 4px;
 }
 .mesa-info .label {
-  font-size: 0.55rem;
+  font-size: 0.5rem;
   color: #888;
   display: block;
   font-weight: bold;
   letter-spacing: 1px;
 }
 .mesa-info .numero {
-  font-size: 1.6rem;
+  font-size: 1.4rem;
   color: #c5a059;
   font-weight: bold;
 }
 
-.btn-cambiar-mesa {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
+.btn-salir-mesa {
   background: #c5a059;
-  border: 1px solid #111;
+  border: 1px solid #000;
   color: #000;
-  border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  cursor: pointer;
-  font-size: 0.85rem;
+  font-family: "Roboto Mono", monospace;
+  font-size: 0.65rem;
   font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  transition: 0.2s;
+  padding: 2px 8px;
+  cursor: pointer;
+  border-radius: 10px;
+  margin-top: 4px;
+  transition: all 0.2s ease;
 }
-.btn-cambiar-mesa:hover {
+
+.btn-salir-mesa:hover {
   background: #ffffff;
-  transform: scale(1.1);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.6);
 }
 
 .pantalla-inicio-centrada {
@@ -750,6 +767,12 @@ onMounted(fetchProductos);
     flex: none;
     width: 100%;
     position: static;
+  }
+  .posavasos-mesa {
+    position: fixed;
+    top: auto;
+    bottom: 20px;
+    right: 20px;
   }
 }
 </style>

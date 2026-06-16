@@ -1,6 +1,12 @@
 <template>
   <div class="cocina-container">
-    <h1 class="titulo-brillante">GESTIÓN DE COCINA</h1>
+    <header class="cocina-header">
+      <h1 class="titulo-brillante">GESTIÓN DE COCINA</h1>
+      <button @click="ejecutarLogout" class="btn-cerrar-sesion">
+        CERRAR SESIÓN
+      </button>
+    </header>
+    <div class="linea-divisoria-header"></div>
 
     <div class="cocina-layout">
       <div class="card-mystic seccion-mapa">
@@ -137,12 +143,15 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import api from "../api.js";
+import { useAuthStore } from "../stores/auth.js";
 
 const pedidos = ref([]);
 const productos = ref([]);
 const mesaSeleccionada = ref(null);
 const comunicandoCliente = ref(false);
 const idPedidoEntregado = ref(null);
+
+const authStore = useAuthStore();
 
 const cargarDatos = async () => {
   try {
@@ -153,6 +162,13 @@ const cargarDatos = async () => {
     productos.value = resProd.data;
   } catch (e) {
     console.error("Error al sincronizar datos de cocina", e);
+  }
+};
+
+const ejecutarLogout = () => {
+  if (confirm("¿Seguro que deseas cerrar sesión en el panel de Cocina?")) {
+    authStore.logout();
+    window.location.reload();
   }
 };
 
@@ -231,13 +247,49 @@ onMounted(cargarDatos);
   color: white;
   font-family: "Roboto Mono", monospace;
 }
+
+.cocina-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
 .titulo-brillante {
   color: #c5a059;
   text-transform: uppercase;
   letter-spacing: 4px;
-  text-align: center;
+  margin: 0;
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.btn-cerrar-sesion {
+  background: transparent;
+  border: 1px solid #c5a059;
+  color: #c5a059;
+  padding: 10px 20px;
+  font-family: "Roboto Mono", monospace;
+  font-weight: bold;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: all 0.3s ease;
+  letter-spacing: 1px;
+}
+.btn-cerrar-sesion:hover {
+  background: #c5a059;
+  color: #000000;
+  box-shadow: 0 0 10px rgba(197, 160, 89, 0.4);
+}
+
+.linea-divisoria-header {
+  width: 100%;
+  height: 1px;
+  background: #333;
   margin-bottom: 40px;
 }
+
 .subtitulo {
   color: #c5a059;
   margin-bottom: 20px;
@@ -476,7 +528,6 @@ onMounted(cargarDatos);
   font-style: italic;
 }
 
-/* BOTÓN ACCIÓN DEL MODAL */
 .btn-modal-aceptar {
   width: 100%;
   background: #1a1a1a;
@@ -530,6 +581,14 @@ onMounted(cargarDatos);
 @media (max-width: 850px) {
   .cocina-layout {
     grid-template-columns: 1fr;
+  }
+  .cocina-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .btn-cerrar-sesion {
+    width: 100%;
   }
 }
 </style>

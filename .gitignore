@@ -1,12 +1,7 @@
-# Python
 __pycache__/
 *.py[cod]
 venv/
 .env
-
-# Node
 node_modules/
 dist/
-
-# Docker
 .docker_db_data/
