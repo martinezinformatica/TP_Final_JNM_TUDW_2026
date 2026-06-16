@@ -195,7 +195,6 @@ const ingresarPersonal = async (rolRequerido) => {
   }
 };
 
-// Nota: Mantengo la función por si se requiere heredar o reutilizar internamente en el componente
 const cerrarSesion = () => {
   authStore.logout();
   seccionActual.value = "carta";
