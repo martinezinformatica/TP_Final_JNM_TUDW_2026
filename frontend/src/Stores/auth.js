@@ -1,81 +1,108 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import api from '../api.js'; 
+import api from '../api.js';
 
 export const useAuthStore = defineStore('auth', () => {
-  const accessToken = ref(localStorage.getItem('access') || null);
-  const refreshToken = ref(localStorage.getItem('refresh') || null);
-  const userRole = ref(localStorage.getItem('role') || null); 
-  const userTelefono = ref(localStorage.getItem('telefono') || null);
-  const esperandoCodigo = ref(false);
 
-  const isAuthenticated = computed(() => !!accessToken.value);  
-  const isAdmin = computed(() => userRole.value === 'admin');
-  const isCocina = computed(() => userRole.value === 'cocina');
-  const isCliente = computed(() => userRole.value === 'cliente');
+ 
+  const accessToken  = ref(localStorage.getItem('access')   || null);
+  const refreshToken = ref(localStorage.getItem('refresh')  || null);
+  const userRole     = ref(localStorage.getItem('role')     || null);
+  const userTelefono = ref(localStorage.getItem('telefono') || null);  
+  const esperandoCodigo = ref(false);  
+  const esperandoPassword = ref(false); 
+  const rolDetectado = ref(null);
 
-  async function login(username, password) {
-    try {
-      const response = await api.post('auth/login/', { username, password });
-      
-      accessToken.value = response.data.access;
-      refreshToken.value = response.data.refresh;
-      userRole.value = response.data.role;
-      userTelefono.value = response.data.telefono || null;
+ 
+  const isAuthenticated = computed(() => !!accessToken.value);
+  const isAdmin         = computed(() => userRole.value === 'admin');
+  const isCocina        = computed(() => userRole.value === 'cocina');
+  const isCliente       = computed(() => userRole.value === 'cliente');
+  const isPersonal      = computed(() => isAdmin.value || isCocina.value);
 
-      localStorage.setItem('access', response.data.access);
-      localStorage.setItem('refresh', response.data.refresh);
-      localStorage.setItem('role', response.data.role);
-      if (response.data.telefono) {
-        localStorage.setItem('telefono', response.data.telefono);
-      }
-      return true;
-    } catch (error) {
-      console.error("Error en el login:", error);
-      throw error;
-    }
+ 
+  function _guardarSesion({ access, refresh, role }) {
+    accessToken.value  = access;
+    refreshToken.value = refresh || null;
+    userRole.value     = role;
+
+    localStorage.setItem('access', access);
+    localStorage.setItem('role', role);
+    if (refresh)            localStorage.setItem('refresh', refresh);
+    if (userTelefono.value) localStorage.setItem('telefono', userTelefono.value);
   }
 
-  async function solicitarCodigoCliente(telefono) {
+  
+  async function iniciarLogin(telefono) {
     try {
-      await api.post('auth/solicitar-codigo/', { telefono });
-      esperandoCodigo.value = true;
       userTelefono.value = telefono;
-      return true;
+      const response = await api.post('auth/login-unificado/', { telefono });
+
+      if (response.data.tipo === 'personal') {
+       
+        rolDetectado.value      = response.data.role;
+        esperandoPassword.value = true;
+        return 'personal';
+      } else {
+        
+        rolDetectado.value    = 'cliente';
+        esperandoCodigo.value = true;
+        return 'cliente';
+      }
     } catch (error) {
-      console.error("Error al solicitar codigo:", error);
       throw error;
     }
   }
 
+ 
   async function verificarCodigoCliente(codigo) {
     try {
-      const response = await api.post('auth/verificar-codigo/', { 
-        telefono: userTelefono.value, 
-        codigo: codigo 
+      const response = await api.post('auth/verificar-codigo/', {
+        telefono: userTelefono.value,
+        codigo,
       });
-      
-      accessToken.value = response.data.access;
-      userRole.value = 'cliente';
-
-      localStorage.setItem('access', response.data.access);
-      localStorage.setItem('role', 'cliente');
-      localStorage.setItem('telefono', userTelefono.value);
-      
+      _guardarSesion(response.data);
       esperandoCodigo.value = false;
+      rolDetectado.value    = null;
       return true;
     } catch (error) {
-      console.error("Error al verificar codigo:", error);
       throw error;
     }
   }
 
+  
+  async function verificarPasswordPersonal(password) {
+    try {
+      const response = await api.post('auth/login/', {
+        username: userTelefono.value,
+        password,
+      });
+      _guardarSesion(response.data);
+      esperandoPassword.value = false;
+      rolDetectado.value      = null;
+      return true;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+ 
+  function resetearLogin() {
+    esperandoCodigo.value   = false;
+    esperandoPassword.value = false;
+    rolDetectado.value      = null;
+    userTelefono.value      = null;
+  }
+
+ 
   function logout() {
-    accessToken.value = null;
-    refreshToken.value = null;
-    userRole.value = null;
-    userTelefono.value = null;
-    esperandoCodigo.value = false;
+    accessToken.value       = null;
+    refreshToken.value      = null;
+    userRole.value          = null;
+    userTelefono.value      = null;
+    esperandoCodigo.value   = false;
+    esperandoPassword.value = false;
+    rolDetectado.value      = null;
 
     localStorage.removeItem('access');
     localStorage.removeItem('refresh');
@@ -83,19 +110,14 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.removeItem('telefono');
   }
 
-  return { 
-    accessToken, 
-    refreshToken, 
-    userRole, 
-    userTelefono,
-    esperandoCodigo,
-    isAuthenticated, 
-    isAdmin, 
-    isCocina, 
-    isCliente,
-    login, 
-    solicitarCodigoCliente,
+  return {
+    accessToken, refreshToken, userRole, userTelefono,
+    esperandoCodigo, esperandoPassword, rolDetectado,
+    isAuthenticated, isAdmin, isCocina, isCliente, isPersonal,
+    iniciarLogin,
     verificarCodigoCliente,
-    logout 
+    verificarPasswordPersonal,
+    resetearLogin,
+    logout,
   };
 });

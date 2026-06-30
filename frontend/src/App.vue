@@ -4,7 +4,7 @@
       <div class="logo">NATURAL MYSTIC</div>
       <div class="menu">
         <button
-          v-for="item in menuItems"
+          v-for="item in menuItemsVisibles"
           :key="item.id"
           @click="navegarA(item.id)"
           :class="['nav-btn', { activo: seccionActual === item.id }]"
@@ -21,92 +21,20 @@
       <Contacto v-if="seccionActual === 'contacto'" />
 
       <template v-if="seccionActual === 'carta'">
-        <div v-if="!authStore.isAuthenticated" class="card-mystic-login">
-          <h2 class="subtitulo-login">INGRESO CLIENTE</h2>
-
-          <div v-if="!authStore.esperandoCodigo">
-            <p>
-              Ingresá tu teléfono para recibir tu código de acceso por WhatsApp
-              y notificaciones.
-            </p>
-            <input
-              v-model="telefonoInput"
-              type="tel"
-              placeholder="Ej: 2984123456"
-              class="input-login"
-            />
-            <button @click="solicitarCodigo" class="btn-login">
-              SOLICITAR CÓDIGO
-            </button>
-          </div>
-
-          <div v-else>
-            <p>Ingresá el código de 8 dígitos enviado a tu WhatsApp.</p>
-            <input
-              v-model="codigoInput"
-              type="text"
-              maxlength="8"
-              placeholder="Código de 8 dígitos"
-              class="input-login"
-            />
-            <button @click="verificarCodigo" class="btn-login">
-              VERIFICAR CÓDIGO
-            </button>
-            <button
-              @click="authStore.esperandoCodigo = false"
-              class="btn-login btn-volver"
-            >
-              VOLVER
-            </button>
-          </div>
-        </div>
+        <LoginUnificado v-if="!authStore.isAuthenticated" @navegar="navegarA" />
         <CartaDigital v-else />
       </template>
 
       <template v-if="seccionActual === 'cocina'">
-        <div
+        <LoginUnificado
           v-if="!authStore.isCocina && !authStore.isAdmin"
-          class="card-mystic-login"
-        >
-          <h2 class="subtitulo-login">ACCESO A COCINA</h2>
-          <input
-            v-model="usernameInput"
-            type="text"
-            placeholder="Usuario"
-            class="input-login"
-          />
-          <input
-            v-model="passwordInput"
-            type="password"
-            placeholder="Contraseña"
-            class="input-login"
-          />
-          <button @click="ingresarPersonal('cocina')" class="btn-login">
-            INGRESAR
-          </button>
-        </div>
+          @navegar="navegarA"
+        />
         <Cocina v-else />
       </template>
 
       <template v-if="seccionActual === 'admin'">
-        <div v-if="!authStore.isAdmin" class="card-mystic-login">
-          <h2 class="subtitulo-login">PANEL DE ADMINISTRACIÓN</h2>
-          <input
-            v-model="usernameInput"
-            type="text"
-            placeholder="Usuario"
-            class="input-login"
-          />
-          <input
-            v-model="passwordInput"
-            type="password"
-            placeholder="Contraseña"
-            class="input-login"
-          />
-          <button @click="ingresarPersonal('admin')" class="btn-login">
-            INGRESAR
-          </button>
-        </div>
+        <LoginUnificado v-if="!authStore.isAdmin" @navegar="navegarA" />
         <Administrador v-else />
       </template>
     </main>
@@ -114,7 +42,7 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
+import { ref, computed, watch } from "vue";
 import { useAuthStore } from "./stores/auth.js";
 import Inicio from "./components/Inicio.vue";
 import CartaDigital from "./components/CartaDigital.vue";
@@ -123,82 +51,64 @@ import Nosotros from "./components/Nosotros.vue";
 import Contacto from "./components/Contacto.vue";
 import Cocina from "./components/Cocina.vue";
 import Administrador from "./components/Admin.vue";
+import LoginUnificado from "./components/LoginUnificado.vue";
 
 const authStore = useAuthStore();
+
 const seccionActual = ref("carta");
 
-const telefonoInput = ref("");
-const codigoInput = ref("");
-const usernameInput = ref("");
-const passwordInput = ref("");
+watch(
+  () => authStore.userRole,
+  (nuevoRol) => {
+    if (nuevoRol === "admin") seccionActual.value = "admin";
+    if (nuevoRol === "cocina") seccionActual.value = "cocina";
+    if (nuevoRol === "cliente") seccionActual.value = "carta";
+  },
+  { immediate: true },
+);
 
-const menuItems = [
-  { id: "inicio", nombre: "Inicio" },
-  { id: "carta", nombre: "Pedir" },
-  { id: "nosotros", nombre: "Nosotros" },
-  { id: "sugerencias", nombre: "Voz de Nosotros" },
-  { id: "contacto", nombre: "Contacto" },
-  { id: "cocina", nombre: "Cocina" },
-  { id: "admin", nombre: "Administrador" },
+const todosLosItems = [
+  {
+    id: "inicio",
+    nombre: "Inicio",
+    roles: ["publico", "cliente", "cocina", "admin"],
+  },
+  {
+    id: "carta",
+    nombre: "Pedir",
+    roles: ["publico", "cliente", "cocina", "admin"],
+  },
+  {
+    id: "nosotros",
+    nombre: "Nosotros",
+    roles: ["publico", "cliente", "cocina", "admin"],
+  },
+  {
+    id: "sugerencias",
+    nombre: "Voz de Nosotros",
+    roles: ["publico", "cliente", "cocina", "admin"],
+  },
+  {
+    id: "contacto",
+    nombre: "Contacto",
+    roles: ["publico", "cliente", "cocina", "admin"],
+  },
+  { id: "cocina", nombre: "Cocina", roles: ["cocina", "admin"] },
+  { id: "admin", nombre: "Administrador", roles: ["admin"] },
 ];
 
-const limpiarFormularios = () => {
-  usernameInput.value = "";
-  passwordInput.value = "";
-  telefonoInput.value = "";
-  codigoInput.value = "";
-};
+const menuItemsVisibles = computed(() => {
+  const rol = authStore.userRole || "publico";
+  return todosLosItems.filter((item) => item.roles.includes(rol));
+});
 
 const navegarA = (id) => {
   seccionActual.value = id;
-  limpiarFormularios();
-};
-
-const solicitarCodigo = async () => {
-  if (!telefonoInput.value.trim()) {
-    alert("Por favor, ingresá un número de teléfono válido.");
-    return;
-  }
-  try {
-    await authStore.solicitarCodigoCliente(telefonoInput.value);
-  } catch (error) {
-    alert("Error al solicitar el código. Verificá el número.");
-  }
-};
-
-const verificarCodigo = async () => {
-  if (codigoInput.value.trim().length !== 8) {
-    alert("El código debe tener exactamente 8 dígitos.");
-    return;
-  }
-  try {
-    await authStore.verificarCodigoCliente(codigoInput.value);
-  } catch (error) {
-    alert("Código incorrecto, vencido o inválido.");
-  }
-};
-
-const ingresarPersonal = async (rolRequerido) => {
-  if (!usernameInput.value.trim() || !passwordInput.value.trim()) {
-    alert("Completá todos los campos.");
-    return;
-  }
-  try {
-    await authStore.login(usernameInput.value, passwordInput.value);
-
-    if (rolRequerido === "admin" && !authStore.isAdmin) {
-      alert("Tu usuario no tiene permisos de Administrador.");
-      authStore.logout();
-    }
-  } catch (error) {
-    alert("Credenciales incorrectas. Verificá tu usuario y contraseña.");
-  }
 };
 
 const cerrarSesion = () => {
   authStore.logout();
-  seccionActual.value = "carta";
-  limpiarFormularios();
+  seccionActual.value = "sugerencias";
 };
 </script>
 
@@ -249,6 +159,22 @@ body {
 .nav-btn.activo {
   border: 1px solid #c5a059;
   box-shadow: 0 0 10px rgba(197, 160, 89, 0.5);
+}
+
+.btn-logout {
+  color: #c0392b;
+  margin-left: 20px;
+  border-left: 1px solid #2a2a2a;
+  padding-left: 20px;
+  border-radius: 0;
+  letter-spacing: 2px;
+}
+
+.btn-logout:hover {
+  color: #fff;
+  background: #c0392b;
+  border-color: #c0392b;
+  box-shadow: 0 0 10px rgba(192, 57, 43, 0.5);
 }
 
 .main-content {
@@ -309,6 +235,16 @@ body {
 .btn-login:hover {
   background: #c5a059;
   color: #000;
+}
+
+.btn-login:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-login:disabled:hover {
+  background: #2a2a2a;
+  color: #ffffff;
 }
 
 .btn-volver {

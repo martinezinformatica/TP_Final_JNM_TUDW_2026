@@ -1,10 +1,10 @@
-# 🍺 Natural Mystic - Sistema de Gestión Gastronómica y Carta Digital
+# Natural Mystic - Sistema de Gestión Gastronómica y Carta Digital
 
 Este repositorio contiene el desarrollo de la plataforma web Full Stack para la cervecería **Natural Mystic** (General Roca - Fiske Menuco). El sistema está diseñado con una arquitectura desacoplada para agilizar la experiencia del cliente en el salón y optimizar la administración del negocio mediante un panel de control inteligente en tiempo real.
 
 ---
 
-## 🚀 Objetivos del Proyecto
+## Objetivos del Proyecto
 
 - **Experiencia de Usuario Integrada**: Permitir que los clientes escaneen la mesa, visualicen la carta interactiva con control de stock y despachen pedidos directo a la cocina.
 - **Panel de Administración Centralizado**: Proveer una interfaz administrativa simétrica y compacta que organice de forma eficiente el alta de productos/mesas, la edición en línea y la visualización de analíticas clave.
@@ -12,17 +12,17 @@ Este repositorio contiene el desarrollo de la plataforma web Full Stack para la 
 
 ---
 
-## 🛠️ Stack Tecnológico Pensado
+## Stack Tecnológico Pensado
 
 El ecosistema de la aplicación se estructura con herramientas modernas, escalables y de alto rendimiento:
 
-### 🖥️ Backend (API REST)
+### Backend (API REST)
 
 - **Python**: Lenguaje base para el desarrollo de la lógica del servidor.
 - **Django & Django REST Framework (DRF)**: Framework robusto utilizado para el modelado de datos relacionales, el ORM y la exposición segura de los endpoints de `Productos`, `Mesas` y `Pedidos`.
 - **PostgreSQL**: Motor de base de datos relacional para garantizar la persistencia e integridad de los registros históricos del bar.
 
-### 🎨 Frontend (SPA)
+### Frontend (SPA)
 
 - **Vue 3 (Composition API)**: Framework progresivo para estructurar una interfaz ágil, modular y reactiva.
 - **Vite**: Entorno de desarrollo rápido para compilar y empaquetar el frontend con tiempos de carga óptimos.
@@ -32,7 +32,7 @@ El ecosistema de la aplicación se estructura con herramientas modernas, escalab
 
 ---
 
-## 🔐 Seguridad e Interoperabilidad: Implementación de JWT
+## Seguridad e Interoperabilidad: Implementación de JWT
 
 Para proteger los datos sensibles del negocio y segmentar los roles de usuario (Administradores, Mozos y Cocineros), el sistema implementará **JSON Web Tokens (JWT)** mediante la librería `django-rest-framework-simplejwt`:
 
@@ -42,7 +42,7 @@ Para proteger los datos sensibles del negocio y segmentar los roles de usuario (
 
 ---
 
-## 📋 Detalle de la Estructura de Administración Implementada
+## Detalle de la Estructura de Administración Implementada
 
 El panel de control (`Admin.vue`) se organizó bajo una matriz visual simétrica optimizada para el administrador:
 
@@ -54,7 +54,7 @@ El panel de control (`Admin.vue`) se organizó bajo una matriz visual simétrica
 
 ---
 
-## 📈 Estado y Próximos Pasos
+## Estado y Próximos Pasos
 
 - [x] Maquetado estético e interfaz adaptativa de la Carta Digital.
 - [x] Rediseño y balanceo del Panel de Administración (Grilla simétrica y Top 10).

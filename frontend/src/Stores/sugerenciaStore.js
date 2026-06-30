@@ -3,9 +3,9 @@ import { defineStore } from 'pinia'
 export const useSugerenciaStore = defineStore('sugerencia', {
   state: () => ({
     comentarios: [
-      { calificacion: '🥃🥃🥃🥃', texto: 'La mejor IPA de Roca.' },
-      { calificacion: '🥃🥃🥃', texto: 'Muy buena atención.' },
-      { calificacion: '🥃🥃', texto: 'Las papas estaban un poco frías.' }
+      { calificacion: 4, texto: 'La mejor IPA de Roca.' },
+      { calificacion: 3, texto: 'Muy buena atención.' },
+      { calificacion: 2, texto: 'Las papas estaban un poco frías.' }
     ]
   }),
   actions: {
@@ -13,9 +13,7 @@ export const useSugerenciaStore = defineStore('sugerencia', {
       this.comentarios.push(nueva)
     }
   },
-  getters: {
-    ultimasTres: (state) => {
-           return state.comentarios.slice(5).reverse()
-    }
+  getters: {   
+    ultimasTres: (state) => state.comentarios.slice(-3).reverse()
   }
 })

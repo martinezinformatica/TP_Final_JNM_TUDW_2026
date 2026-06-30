@@ -216,7 +216,6 @@ const ventas = ref([]);
 const productoEditandoId = ref(null);
 const prodEditado = ref({ nombre: "", precio: 0, stock: 0 });
 
-// Función para cerrar la sesión del Administrador
 const ejecutarCerrarSesion = () => {
   if (confirm("¿Querés cerrar la sesión de Administración?")) {
     authStore.logout();
