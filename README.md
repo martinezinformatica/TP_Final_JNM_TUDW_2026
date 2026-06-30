@@ -49,19 +49,5 @@ El panel de control (`Admin.vue`) se organizó bajo una matriz visual simétrica
 1. **Gestión Operativa (Bloque Superior)**: Formularios en paralelo para la creación inmediata de nuevos productos (control de nombre, precio y stock) y el alta dinámica de mesas.
 2. **Monitoreo y Control (Bloque Central - Layout de 2 Cuadros)**:
    - **Cuadro Izquierdo (Lista de Productos)**: Vista unificada que permite modificar precios, editar stock en línea o eliminar artículos, confinada en un contenedor con scroll interno para evitar desplazamientos infinitos.
-   - **Cuadro Derecho (🏆 Top 10 Más Vendidos)**: Componente reactivo computado en tiempo real que procesa el historial de pedidos entregados y despliega un ranking automático con los productos más exitosos del bar para la toma de decisiones comerciales.
+   - **Cuadro Derecho (Top 10 Más Vendidos)**: Componente reactivo computado en tiempo real que procesa el historial de pedidos entregados y despliega un ranking automático con los productos más exitosos del bar para la toma de decisiones comerciales.
 3. **Historial General (Bloque Inferior)**: Registro cronológico de auditoría de pedidos con estado "Entregado", detallando totales, número de mesa y desglose de ítems.
-
----
-
-## Estado y Próximos Pasos
-
-- [x] Maquetado estético e interfaz adaptativa de la Carta Digital.
-- [x] Rediseño y balanceo del Panel de Administración (Grilla simétrica y Top 10).
-- [ ] Configuración del backend de Django para la emisión de endpoints JWT (`/api/token/` y `/api/token/refresh/`).
-- [ ] Integración de los interceptores de Axios en Vue para adjuntar los tokens de seguridad a las rutas restringidas.
-- [ ] Estabilización del enrutamiento nativo con `Vue Router`.
-
----
-
-_Desarrollado para Natural Mystic — Calidad y control en cada pinta._
