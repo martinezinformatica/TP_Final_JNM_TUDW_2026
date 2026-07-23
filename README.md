@@ -54,27 +54,20 @@ Levantar la infraestructura completa
 
 Desde la raíz del proyecto (TP_FINAL), donde se ubica el archivo docker-compose.yml, ejecutá el siguiente comando para construir las imágenes y levantar los servicios:
 
-docker compose up --build
+docker compose up --build -d //Construir y levantar los contenedores con Docker Compose:
+docker compose exec backend python manage.py migrate //Ejecutar las migraciones de la base de datos:
+docker compose exec backend python manage.py loaddata datos_iniciales.json //Cargar los datos iniciales y usuarios de prueba
+
+Usuarios:
+SuperUsuario: Loguin: admin/Contraseña admin1234
+Administrdor: Loguin: 2984333444/Contraseña: administrador*
+Cocina: Loguin: 2984111222/Contraseña: cocinero*
 
 Una vez finalizada la construcción, los servicios estarán disponibles en los siguientes accesos:
 
 Frontend (Interfaz Web): http://localhost:5173
 
 Backend (API REST): http://localhost:8000/api/
-
-Base de Datos (PostgreSQL): Puerto interno 5432 dentro de la red red_proyecto
-
-Aplicar migraciones en la Base de Datos:
-
-Para crear las tablas de la base de datos dentro del contenedor del backend (django_backend), ejecutá en una nueva terminal
-
-docker compose exec backend python manage.py migrate
-
-Crear Administrador del Sistema
-
-Para acceder al panel de administración nativo de Django y gestionar la base de datos de forma directa
-
-docker compose exec backend python manage.py createsuperuser
 
 http://localhost:8000/admin/
 
