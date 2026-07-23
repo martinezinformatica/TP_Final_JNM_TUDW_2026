@@ -1,0 +1,51 @@
+services:
+  db:
+    image: postgres:15
+    container_name: db_proyecto_final
+    restart: always
+    environment:
+      POSTGRES_DB: proyecto_db
+      POSTGRES_USER: ana_user
+      POSTGRES_PASSWORD: ana_password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - red_proyecto
+
+  backend:
+    build: ./backend
+    container_name: django_backend
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ./backend:/app
+    ports:
+      - "8000:8000"
+    environment:
+      - DB_NAME=proyecto_db
+      - DB_USER=ana_user
+      - DB_PASS=ana_password
+      - DB_HOST=db
+    depends_on:
+      - db
+    networks:
+      - red_proyecto
+  frontend:
+    build: ./frontend
+    container_name: vue_frontend
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+      - VITE_POLLING=true
+    depends_on:
+      - backend
+    networks:
+      - red_proyecto
+volumes:
+  postgres_data:
+networks:
+  red_proyecto:
+    driver: bridge

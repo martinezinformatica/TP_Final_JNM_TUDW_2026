@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*$py.class
+node_modules/
+dist/
+dist-ssr/
+*.local
+.docker_db_data/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
