@@ -57,6 +57,7 @@ Desde la raíz del proyecto (TP_FINAL), donde se ubica el archivo docker-compose
 docker compose up --build -d //Construir y levantar los contenedores con Docker Compose:
 docker compose exec backend python manage.py migrate //Ejecutar las migraciones de la base de datos:
 docker compose exec backend python manage.py loaddata datos_iniciales.json //Cargar los datos iniciales y usuarios de prueba
+docker compose exec backend python manage.py shell -c "from django.contrib.auth.models import User; u1=User.objects.get(username='admin'); u1.set_password('admin1234'); u1.save(); u2=User.objects.get(username='2984111222'); u2.set_password('cocinero*'); u2.save(); u3=User.objects.get(username='2984333444'); u3.set_password('administrador*'); u3.save(); print('Usuarios iniciales configurados exitosamente')"
 
 Usuarios:
 SuperUsuario: Loguin: admin/Contraseña admin1234
