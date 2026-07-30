@@ -57,7 +57,7 @@
 
 <script setup>
 import { ref } from "vue";
-import { useSugerenciaStore } from "../stores/sugerenciaStore";
+import { useSugerenciaStore } from "../Stores/sugerenciaStore";
 
 const store = useSugerenciaStore();
 const nuevoComentario = ref("");

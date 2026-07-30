@@ -108,8 +108,8 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import api from "../api.js";
-import { useCarritoStore } from "../stores/carritoStore";
-import { useAuthStore } from "../stores/auth.js";
+import { useCarritoStore } from "../Stores/carritoStore";
+import { useAuthStore } from "../Stores/auth.js";
 
 const carritoStore = useCarritoStore();
 const authStore = useAuthStore();

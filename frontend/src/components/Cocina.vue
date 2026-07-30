@@ -114,7 +114,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import api from "../api.js";
-import { useAuthStore } from "../stores/auth.js";
+import { useAuthStore } from "../Stores/auth.js";
 
 const pedidos = ref([]);
 const productos = ref([]);
