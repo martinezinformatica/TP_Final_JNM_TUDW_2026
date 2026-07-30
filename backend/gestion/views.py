@@ -1,5 +1,6 @@
 from rest_framework import viewsets, status, decorators, views
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly, AllowAny
 from django.db import transaction
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
@@ -11,28 +12,32 @@ from rest_framework.pagination import PageNumberPagination
 
 class ProductoViewSet(viewsets.ModelViewSet):
     queryset = Producto.objects.all()
-    serializer_class = ProductoSerializer
+    serializer_class = ProductoSerializer   
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class MesaViewSet(viewsets.ModelViewSet):
     queryset = Mesa.objects.all()
-    serializer_class = MesaSerializer
+    serializer_class = MesaSerializer   
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
 
 class HistorialPedidosPagination(PageNumberPagination):
     page_size = 10  
 
+
 class PedidoViewSet(viewsets.ModelViewSet):
     queryset = Pedido.objects.all().order_by('-fecha_creacion') 
     serializer_class = PedidoSerializer
-    pagination_class = HistorialPedidosPagination 
+    pagination_class = HistorialPedidosPagination    
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def paginate_queryset(self, queryset):
         if self.action != 'list':
             return None
         return super().paginate_queryset(queryset)
 
-    @decorators.action(detail=True, methods=['post'])
+    @decorators.action(detail=True, methods=['post'], permission_classes=[IsAuthenticated])
     def avanzar_estado(self, request, pk=None):
         pedido = self.get_object()
 
@@ -106,6 +111,8 @@ class PedidoViewSet(viewsets.ModelViewSet):
 
 
 class LoginUnificadoView(views.APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         telefono = request.data.get('telefono', '').strip()
 
@@ -137,6 +144,8 @@ class LoginUnificadoView(views.APIView):
 
 
 class VerificarCodigoView(views.APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         telefono = request.data.get('telefono', '').strip()
         codigo_ingresado = request.data.get('codigo', '').strip()
@@ -179,6 +188,8 @@ class VerificarCodigoView(views.APIView):
 
 
 class LoginPersonalView(views.APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         username = request.data.get('username', '').strip()
         password = request.data.get('password', '').strip()
@@ -206,6 +217,8 @@ class LoginPersonalView(views.APIView):
 
 
 class SolicitarCodigoView(views.APIView):
+    permission_classes = [AllowAny]
+
     def post(self, request):
         telefono = request.data.get('telefono', '').strip()
         if not telefono:
