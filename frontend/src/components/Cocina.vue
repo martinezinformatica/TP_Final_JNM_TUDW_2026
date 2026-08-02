@@ -84,9 +84,6 @@
             >
               <span class="cant">{{ item.cantidad }}x</span>
               <span class="name">{{ item.nombre_producto }}</span>
-              <small v-if="item.observacion" class="obs"
-                >({{ item.observacion }})</small
-              >
             </li>
           </ul>
 
@@ -468,12 +465,6 @@ onMounted(cargarDatos);
   color: #c5a059;
   font-weight: bold;
   margin-right: 15px;
-}
-.lista-items-cocina .obs {
-  display: block;
-  color: #777;
-  font-size: 0.85rem;
-  font-style: italic;
 }
 .sin-datos {
   padding: 20px;

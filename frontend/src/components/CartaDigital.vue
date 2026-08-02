@@ -169,7 +169,6 @@ const enviarPedidoFinal = async () => {
       itemsAgrupados.push({
         producto: item.id,
         cantidad: 1,
-        observacion: "",
       });
     }
   });

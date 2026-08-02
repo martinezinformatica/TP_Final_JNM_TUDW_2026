@@ -50,8 +50,8 @@
 
 <script setup>
 import { ref, computed, watch } from "vue";
-import { useAuthStore } from "./stores/auth.js";
-import { useCarritoStore } from "./stores/carritoStore.js";
+import { useAuthStore } from "./Stores/auth.js";
+import { useCarritoStore } from "./Stores/carritoStore.js";
 import Inicio from "./components/Inicio.vue";
 import CartaDigital from "./components/CartaDigital.vue";
 import Sugerencias from "./components/Sugerencias.vue";
