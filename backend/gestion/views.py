@@ -30,7 +30,7 @@ class PedidoViewSet(viewsets.ModelViewSet):
     queryset = Pedido.objects.all().order_by('-fecha_creacion') 
     serializer_class = PedidoSerializer
     pagination_class = HistorialPedidosPagination    
-    permission_classes = [IsAuthenticatedOrReadOnly]
+    permission_classes = [IsAuthenticated]
 
     def paginate_queryset(self, queryset):
         if self.action != 'list':
